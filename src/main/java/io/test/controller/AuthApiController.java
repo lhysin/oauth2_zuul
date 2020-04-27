@@ -44,22 +44,22 @@ public class AuthApiController {
     @GetMapping("/list")
     @ResponseStatus(HttpStatus.OK)
     public  ResponseEntity<Object> listLoggedInUsers(OAuth2Authentication authentication, HttpSession session) {
-    	SecurityContextHolder.getContext().getAuthentication();
-    	
-    	OAuth2AccessToken oAuth2AccessToken = tokenStore.getAccessToken(authentication);
-    	
-    	List<OAuth2AccessToken> oAuth2AccessTokenList = Lists.newArrayList(tokenStore.findTokensByClientIdAndUserName("admin-client", authentication.getName()));
-    	
-    	List<OAuth2Authentication> oAuth2AuthenticationList = oAuth2AccessTokenList.stream()
-    			.map(token -> tokenStore.readAuthentication(token))
-    			.collect(Collectors.toList());
-    	
-    	List<Object> objectList = oAuth2AuthenticationList.stream()
-    		.map(auth -> auth.getPrincipal())
-    		.collect(Collectors.toList());
-    	
-    	List<SessionInformation> sessionInformationList = sessionRegistry.getAllSessions(authentication.getPrincipal(), false);
-    	
+        SecurityContextHolder.getContext().getAuthentication();
+        
+        OAuth2AccessToken oAuth2AccessToken = tokenStore.getAccessToken(authentication);
+        
+        List<OAuth2AccessToken> oAuth2AccessTokenList = Lists.newArrayList(tokenStore.findTokensByClientIdAndUserName("admin-client", authentication.getName()));
+        
+        List<OAuth2Authentication> oAuth2AuthenticationList = oAuth2AccessTokenList.stream()
+                .map(token -> tokenStore.readAuthentication(token))
+                .collect(Collectors.toList());
+        
+        List<Object> objectList = oAuth2AuthenticationList.stream()
+            .map(auth -> auth.getPrincipal())
+            .collect(Collectors.toList());
+        
+        List<SessionInformation> sessionInformationList = sessionRegistry.getAllSessions(authentication.getPrincipal(), false);
+        
         return ResponseEntity.ok(oAuth2AuthenticationList);
     }
 
@@ -85,7 +85,17 @@ public class AuthApiController {
     @PreAuthorize("@customAuthorize.checkBeforeSmsAuthorize()")
     @GetMapping("/me")
     public ResponseEntity<Object> me() {
-        return ResponseEntity.ok(ImmutableMap.of("username", "superAdmin"));
+        return ResponseEntity.ok(ImmutableMap.of(
+                "loginUser", ImmutableMap.of(
+                    "adminId", "superAdmin", 
+                    "adminNm", "슈퍼관리자",
+                    "accessMenus", Lists.newArrayList(
+                        ImmutableMap.of("menuCd", "DASHBOARD", "read", "true", "write", "true"),
+                        ImmutableMap.of("menuCd", "PARTNER_MANAGE", "read", "true", "write", "false"),
+                        ImmutableMap.of("menuCd", "PARTNER_DETAIL", "read", "true", "write", "false")
+                        ))
+                )
+            );
     }
 
     @PreAuthorize("@customAuthorize.checkBeforeSmsAuthorize()")
